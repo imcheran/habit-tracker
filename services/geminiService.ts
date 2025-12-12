@@ -3,6 +3,16 @@ import { Habit, HabitStats, DailyEntry } from '../types';
 
 declare var process: any;
 
+// Helper to check for API Key presence
+const getApiKey = (): string | null => {
+  // In Vite, defined variables are replaced literally. 
+  // If the variable wasn't set at build time, it might be undefined.
+  if (typeof process !== 'undefined' && process.env && process.env.API_KEY) {
+      return process.env.API_KEY;
+  }
+  return null;
+};
+
 // Helper to format data for the AI
 const formatDataForAI = (habits: Habit[], stats: Record<string, HabitStats>) => {
   const today = new Date().toISOString().split('T')[0];
@@ -28,7 +38,13 @@ export const generateProductivityInsights = async (
   stats: Record<string, HabitStats>
 ): Promise<string> => {
   try {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const apiKey = getApiKey();
+    if (!apiKey) {
+        console.error("MISSING API KEY: Please add 'API_KEY' to your Vercel Environment Variables and redeploy.");
+        return "Configuration Error: API Key is missing in deployment settings.";
+    }
+
+    const ai = new GoogleGenAI({ apiKey });
     const jsonData = formatDataForAI(habits, stats);
     
     const prompt = `
@@ -62,7 +78,13 @@ export const generateOrbitAnalysis = async (
   entry: DailyEntry
 ): Promise<string> => {
   try {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const apiKey = getApiKey();
+    if (!apiKey) {
+        console.error("MISSING API KEY: Please add 'API_KEY' to your Vercel Environment Variables and redeploy.");
+        return "Configuration Error: API Key is missing in deployment settings.";
+    }
+
+    const ai = new GoogleGenAI({ apiKey });
     
     const prompt = `
       You are the "OmniLife Super-Brain." Your goal is to find hidden correlations between biology and behavior.
@@ -115,7 +137,13 @@ export const generateTrendAnalysis = async (
   rangeLabel: string
 ): Promise<string> => {
   try {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const apiKey = getApiKey();
+    if (!apiKey) {
+        console.error("MISSING API KEY: Please add 'API_KEY' to your Vercel Environment Variables and redeploy.");
+        return "Configuration Error: API Key is missing in deployment settings.";
+    }
+
+    const ai = new GoogleGenAI({ apiKey });
 
     // Simplify logs to save token space
     const simplifiedLogs = logs.map(l => ({
