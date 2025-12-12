@@ -2,8 +2,8 @@ import React, { useMemo } from 'react';
 import { Habit, TrackingData, UserSettings, DailyLogData, DailyEntry } from '../types';
 import { getDetailedMonthlyStats, getHabitYearlyStats } from '../utils/stats';
 import { CHRONOTYPES } from '../constants';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line, CartesianGrid, Legend } from 'recharts';
-import { Trophy, Flame, AlertTriangle, CheckCircle2, TrendingUp, Zap, Clock, Moon } from 'lucide-react';
+import { XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line, CartesianGrid, Legend } from 'recharts';
+import { Trophy, TrendingUp, Zap, Clock, Moon } from 'lucide-react';
 
 interface DashboardProps {
   habits: Habit[];

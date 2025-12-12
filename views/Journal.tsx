@@ -2,9 +2,9 @@ import React, { useState, useMemo } from 'react';
 import { DailyEntry, DailyLogData, UserSettings } from '../types';
 import { generateOrbitAnalysis } from '../services/geminiService';
 import { 
-  Calendar, Moon, Activity, Brain, Smile, 
+  Calendar, Moon, Activity, Brain, 
   BookOpen, Save, Sparkles, Utensils, Droplets, Flame, 
-  ChevronLeft, ChevronRight, Clock, Battery, Zap
+  ChevronLeft, ChevronRight, Clock, Zap
 } from 'lucide-react';
 
 interface JournalProps {

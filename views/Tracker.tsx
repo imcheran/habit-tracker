@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { Habit, TrackingData } from '../types';
 import { MONTH_NAMES } from '../constants';
 import { calculateHabitStats } from '../utils/stats';
@@ -82,7 +82,7 @@ const Tracker: React.FC<TrackerProps> = ({ habits, data, onToggle }) => {
             </tr>
           </thead>
           <tbody>
-            {habits.map((habit, rowIndex) => {
+            {habits.map((habit) => {
                // Calculate monthly % for this habit
                let habitMonthCount = 0;
                daysArray.forEach(d => {

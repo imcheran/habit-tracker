@@ -1,10 +1,9 @@
-
 import React, { useState, useMemo } from 'react';
 import { FinanceData, Expense, Debt } from '../types';
 import { 
     Plus, Trash2, Wallet, TrendingUp, HandCoins, Settings, DollarSign, 
     Calendar, ArrowUpRight, ArrowDownRight, Activity, PieChart as PieIcon, 
-    BarChart3, AlertCircle, TrendingDown, Target, Banknote
+    BarChart3, AlertCircle, Target, Banknote
 } from 'lucide-react';
 import { 
     PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, 
@@ -57,12 +56,6 @@ const Finance: React.FC<FinanceProps> = ({ data, onUpdate }) => {
     setTxAmount('');
     setTxNote('');
     alert('Expense Saved!');
-  };
-
-  const deleteExpense = (id: string) => {
-    if(confirm('Delete this transaction?')) {
-        onUpdate({ ...data, expenses: data.expenses.filter(e => e.id !== id) });
-    }
   };
 
   const addDebt = () => {
@@ -492,7 +485,7 @@ const Finance: React.FC<FinanceProps> = ({ data, onUpdate }) => {
                                         paddingAngle={5} 
                                         dataKey="value"
                                     >
-                                        {analyticsData.categoryData.map((entry, index) => (
+                                        {analyticsData.categoryData.map((_, index) => (
                                             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                         ))}
                                     </Pie>

@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Habit, TrackingData } from '../types';
 import { MONTH_NAMES } from '../constants';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, PieChart, Pie } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { ChevronLeft, ChevronRight, TrendingUp, TrendingDown, Star, AlertCircle } from 'lucide-react';
 import { getGrade } from '../utils/stats';
 
@@ -19,7 +19,6 @@ const MonthlyDashboard: React.FC<MonthlyDashboardProps> = ({ habits, data }) => 
 
   const stats = useMemo(() => {
     const daysInMonth = new Date(currentYear, selectedMonthIdx + 1, 0).getDate();
-    const monthName = MONTH_NAMES[selectedMonthIdx];
     
     // Calculate stats per habit for this month
     const habitStats = habits.map(habit => {

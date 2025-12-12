@@ -1,5 +1,5 @@
 import React from 'react';
-import { Book, RefreshCw, Zap, ShieldCheck } from 'lucide-react';
+import { Book, Zap, ShieldCheck } from 'lucide-react';
 
 const Guide: React.FC = () => {
   return (
