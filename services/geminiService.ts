@@ -1,13 +1,9 @@
-import { GoogleGenAI } from "@google/genai";
 import { Habit, HabitStats, DailyEntry } from '../types';
 
 declare var process: any;
 
 // Helper to check for API Key presence
 const getApiKey = (): string | null => {
-  // In Vite, 'process.env.API_KEY' is replaced by the actual string value during the build.
-  // We use a try-catch because accessing 'process' directly in the browser would otherwise throw 
-  // a ReferenceError if the replacement didn't happen.
   try {
       // @ts-ignore
       return process.env.API_KEY || null;
@@ -15,6 +11,46 @@ const getApiKey = (): string | null => {
       console.warn("API Key access failed or key is missing.");
       return null;
   }
+};
+
+// Generic Helper to call Groq API (Llama 3)
+const callGroqAPI = async (systemPrompt: string, userPrompt: string): Promise<string> => {
+    const apiKey = getApiKey();
+    
+    if (!apiKey) {
+        throw new Error("MISSING_KEY");
+    }
+
+    try {
+        const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${apiKey}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                messages: [
+                    { role: "system", content: systemPrompt },
+                    { role: "user", content: userPrompt }
+                ],
+                model: "llama3-70b-8192", // High intelligence, very fast, free tier
+                temperature: 0.7,
+                max_tokens: 2048
+            })
+        });
+
+        if (!response.ok) {
+            const err = await response.json().catch(() => ({}));
+            console.error("Groq API Error:", err);
+            throw new Error("API_ERROR");
+        }
+
+        const data = await response.json();
+        return data.choices[0]?.message?.content || "No response generated.";
+    } catch (error) {
+        console.error("Groq Network Error:", error);
+        throw error;
+    }
 };
 
 // Helper to format data for the AI
@@ -42,39 +78,29 @@ export const generateProductivityInsights = async (
   stats: Record<string, HabitStats>
 ): Promise<string> => {
   try {
-    const apiKey = getApiKey();
-    if (!apiKey) {
-        console.error("MISSING API KEY: Please add 'API_KEY' to your Vercel Environment Variables and redeploy.");
-        return "Configuration Error: API Key is missing in deployment settings.";
-    }
-
-    const ai = new GoogleGenAI({ apiKey });
     const jsonData = formatDataForAI(habits, stats);
     
-    const prompt = `
-      You are the "OmniLife Super-Brain," a bio-digital system analyzing a user's habits.
-      Here is the performance data:
+    const systemPrompt = `You are the "OmniLife Super-Brain," a bio-digital system analyzing a user's habits. 
+    If the user is in "Hero Mode", speak like a Tactical AI Commander.
+    If the user is in "Zen Mode", speak like a Stoic Philosopher.
+    Keep responses concise, formatted in Markdown, and avoid conversational filler.`;
+
+    const userPrompt = `Analyze this performance data:
       ${jsonData}
 
-      If the user is in "Hero Mode", speak like a Tactical AI Commander.
-      If the user is in "Zen Mode", speak like a Stoic Philosopher.
-
-      Structure:
+      Required Output Structure:
       1. **System Status**: Brief performance summary.
       2. **Critical Weakness**: Identify one 'At Risk' habit.
       3. **Strategic Protocol**: One specific action to fix it.
-      4. **Inspirational Directive**: Short quote or command.
-    `;
+      4. **Inspirational Directive**: Short quote or command.`;
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: prompt,
-    });
+    return await callGroqAPI(systemPrompt, userPrompt);
 
-    return response.text || "Unable to generate insights at this time.";
-  } catch (error) {
-    console.error("Gemini API Error:", error);
-    return "AI Service is currently unavailable. Please check your connection or API Key configuration.";
+  } catch (error: any) {
+    if (error.message === "MISSING_KEY") {
+        return "Configuration Error: API Key is missing. Please add your Groq key as 'API_KEY' in your environment variables.";
+    }
+    return "AI Service is currently unavailable. Please check your internet connection.";
   }
 };
 
@@ -82,17 +108,9 @@ export const generateOrbitAnalysis = async (
   entry: DailyEntry
 ): Promise<string> => {
   try {
-    const apiKey = getApiKey();
-    if (!apiKey) {
-        console.error("MISSING API KEY: Please add 'API_KEY' to your Vercel Environment Variables and redeploy.");
-        return "Configuration Error: API Key is missing in deployment settings.";
-    }
-
-    const ai = new GoogleGenAI({ apiKey });
+    const systemPrompt = `You are the "OmniLife Super-Brain." Your goal is to find hidden correlations between biology and behavior. Return response in Markdown.`;
     
-    const prompt = `
-      You are the "OmniLife Super-Brain." Your goal is to find hidden correlations between biology and behavior.
-      
+    const userPrompt = `
       User Daily Entry for ${entry.date}:
       
       **Bio-Markers:**
@@ -108,31 +126,25 @@ export const generateOrbitAnalysis = async (
       - Tasks: "${entry.tasksCompleted}"
       - Reflection: "${entry.summary}"
 
-      **Cross-Module Analysis Required:**
-      Does their Sleep Duration explain their Mood?
-      Does their Food choice explain their Energy slump?
-      
-      Return response in Markdown:
+      Analyze: Does Sleep Duration explain Mood? Does Food choice explain Energy slump?
 
+      Required Output Structure:
       ### 🧬 Bio-Digital Correlation
       * **Primary Link:** [e.g. "Low Sleep (5h) correlated with 40% drop in Deep Work"]
       * **Energy State:** ${entry.energyLevel > 7 ? 'Optimized' : 'Compromised'}
 
       ### 🧠 Super-Brain Directive
       **Observation:** [One specific insight on how their biology impacted their day]
-      
-      **Protocol for Tomorrow:** [One actionable bio-hack, e.g., "Shift bedtime to 10pm to recover Energy Buffer"]
+      **Protocol for Tomorrow:** [One actionable bio-hack]
     `;
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: prompt,
-    });
+    return await callGroqAPI(systemPrompt, userPrompt);
 
-    return response.text || "Orbit is offline. Please try again.";
-  } catch (error) {
-    console.error("Orbit AI Error:", error);
-    return "Orbit connectivity issue. Please check API Key.";
+  } catch (error: any) {
+    if (error.message === "MISSING_KEY") {
+        return "Configuration Error: Missing API Key.";
+    }
+    return "Orbit is offline. Please try again.";
   }
 };
 
@@ -141,14 +153,6 @@ export const generateTrendAnalysis = async (
   rangeLabel: string
 ): Promise<string> => {
   try {
-    const apiKey = getApiKey();
-    if (!apiKey) {
-        console.error("MISSING API KEY: Please add 'API_KEY' to your Vercel Environment Variables and redeploy.");
-        return "Configuration Error: API Key is missing in deployment settings.";
-    }
-
-    const ai = new GoogleGenAI({ apiKey });
-
     // Simplify logs to save token space
     const simplifiedLogs = logs.map(l => ({
       date: l.date,
@@ -158,15 +162,13 @@ export const generateTrendAnalysis = async (
       score: l.dayScore
     }));
 
-    const prompt = `
-      You are the OmniLife Trend Engine.
-      Period: ${rangeLabel}.
+    const systemPrompt = `You are the OmniLife Trend Engine. Analyze long-term patterns between Sleep Stability and Day Score. Use Markdown.`;
 
+    const userPrompt = `
+      Period: ${rangeLabel}.
       Data: ${JSON.stringify(simplifiedLogs)}
 
-      Identify long-term patterns between Sleep Stability and Day Score.
-      
-      Report Structure (Markdown):
+      Report Structure:
       ## 🔮 Long-Range Bio-Analysis
       ### 1. The Sleep-Performance Loop
       [Analyze correlation]
@@ -178,14 +180,12 @@ export const generateTrendAnalysis = async (
       [One high-level strategy]
     `;
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: prompt,
-    });
+    return await callGroqAPI(systemPrompt, userPrompt);
 
-    return response.text || "Unable to generate trend analysis.";
-  } catch (error) {
-    console.error("Orbit AI Error:", error);
-    return "Orbit connectivity issue. Please check API Key.";
+  } catch (error: any) {
+    if (error.message === "MISSING_KEY") {
+        return "Configuration Error: Missing API Key.";
+    }
+    return "Trend analysis unavailable.";
   }
 };
