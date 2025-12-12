@@ -209,7 +209,7 @@ const AuthenticatedApp: React.FC<AuthenticatedAppProps> = ({ user, onLogout }) =
                  
                  {/* Mobile: Small Logo on right if needed, or empty */}
                  <div className="md:hidden w-8 h-8 bg-slate-900 rounded-full flex items-center justify-center text-white text-xs font-bold shadow-lg border-2 border-slate-100">
-                    OM
+                    {user.username.substring(0, 2).toUpperCase()}
                  </div>
              </div>
 
@@ -250,8 +250,8 @@ const AuthenticatedApp: React.FC<AuthenticatedAppProps> = ({ user, onLogout }) =
                      </div>
                  )}
 
-                 <div className="hidden md:flex w-10 h-10 bg-slate-900 rounded-full items-center justify-center text-white font-bold shadow-lg border-2 border-slate-100 shrink-0">
-                    OM
+                 <div className="hidden md:flex w-10 h-10 bg-slate-900 rounded-full items-center justify-center text-white font-bold shadow-lg border-2 border-slate-100 shrink-0 uppercase">
+                    {user.username.substring(0, 2).toUpperCase()}
                  </div>
              </div>
         </header>
