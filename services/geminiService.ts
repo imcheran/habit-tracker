@@ -1,6 +1,8 @@
 import { GoogleGenAI } from "@google/genai";
 import { Habit, TrackingData, HabitStats, DailyEntry } from '../types';
 
+declare var process: any;
+
 // Helper to format data for the AI
 const formatDataForAI = (habits: Habit[], data: TrackingData, stats: Record<string, HabitStats>) => {
   const today = new Date().toISOString().split('T')[0];
