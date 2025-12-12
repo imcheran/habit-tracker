@@ -10,7 +10,7 @@ import Settings from './views/Settings';
 import Finance from './views/Finance';
 import { ViewState, Habit, TrackingData, DailyLogData, UserSettings, FinanceData } from './types';
 import { DEFAULT_HABITS } from './constants';
-import { Battery, BatteryCharging, BatteryWarning, Heart, Shield, Zap, Menu } from 'lucide-react';
+import { Battery, BatteryCharging, Heart, Shield, Zap, Menu } from 'lucide-react';
 
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<ViewState>(ViewState.DASHBOARD);
