@@ -1,15 +1,17 @@
 import React from 'react';
 import { ViewState } from '../types';
-import { LayoutDashboard, CalendarDays, BarChart2, Settings, Sparkles, BookOpen, PieChart, Zap, Wallet, X } from 'lucide-react';
+import { LayoutDashboard, CalendarDays, BarChart2, Settings, Sparkles, BookOpen, PieChart, Zap, Wallet, X, LogOut, User as UserIcon } from 'lucide-react';
 
 interface SidebarProps {
   currentView: ViewState;
   setView: (view: ViewState) => void;
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
+  username: string;
+  onLogout: () => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, isOpen, setIsOpen }) => {
+const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, isOpen, setIsOpen, username, onLogout }) => {
   const navItems = [
     { id: ViewState.DASHBOARD, label: 'Omni Dashboard', icon: LayoutDashboard },
     { id: ViewState.MONTHLY_DASHBOARD, label: 'Monthly Analysis', icon: PieChart },
@@ -54,6 +56,19 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, isOpen, setIsOp
           >
             <X size={24} />
           </button>
+        </div>
+
+        {/* User Profile Snippet */}
+        <div className="px-4 py-3 bg-slate-800/50 mx-4 mt-4 rounded-lg flex items-center justify-between border border-slate-700">
+             <div className="flex items-center gap-2 overflow-hidden">
+                 <div className="w-6 h-6 rounded-full bg-indigo-500 flex items-center justify-center text-[10px] font-bold">
+                     {username.charAt(0).toUpperCase()}
+                 </div>
+                 <span className="text-sm font-bold text-slate-200 truncate">@{username}</span>
+             </div>
+             <button onClick={onLogout} className="text-slate-400 hover:text-red-400 transition-colors" title="Logout">
+                 <LogOut size={14} />
+             </button>
         </div>
 
         <nav className="flex-1 p-4 space-y-2 overflow-y-auto custom-scrollbar">

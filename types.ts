@@ -8,6 +8,12 @@ export interface Habit {
   color: string;
 }
 
+export interface User {
+  username: string;
+  password?: string; // In a real app, never store plain text. For local-only prototype, this is acceptable.
+  createdAt: string;
+}
+
 export interface TrackingData {
   [date: string]: string[]; // Date (YYYY-MM-DD) -> Array of completed Habit IDs
 }

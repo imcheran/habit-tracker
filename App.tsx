@@ -8,32 +8,49 @@ import Analytics from './views/Analytics';
 import Journal from './views/Journal';
 import Settings from './views/Settings';
 import Finance from './views/Finance';
-import { ViewState, Habit, TrackingData, DailyLogData, UserSettings, FinanceData } from './types';
+import Auth from './views/Auth';
+import { ViewState, Habit, TrackingData, DailyLogData, UserSettings, FinanceData, User } from './types';
 import { DEFAULT_HABITS } from './constants';
 import { Battery, BatteryCharging, Heart, Shield, Menu } from 'lucide-react';
 
-const App: React.FC = () => {
+// --- Authenticated App Component ---
+// This contains the main logic, but is wrapped to ensure it re-mounts when user changes
+interface AuthenticatedAppProps {
+    user: User;
+    onLogout: () => void;
+}
+
+const AuthenticatedApp: React.FC<AuthenticatedAppProps> = ({ user, onLogout }) => {
   const [currentView, setCurrentView] = useState<ViewState>(ViewState.DASHBOARD);
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   
-  // State Initialization with LocalStorage
+  // Storage Keys with Username Prefix
+  const KEYS = {
+      HABITS: `user_${user.username}_habits`,
+      DATA: `user_${user.username}_data`,
+      LOGS: `user_${user.username}_daily_logs`,
+      FINANCE: `user_${user.username}_finance`,
+      SETTINGS: `user_${user.username}_settings`,
+  };
+
+  // State Initialization with LocalStorage (Scoped to User)
   const [habits, setHabits] = useState<Habit[]>(() => {
-    const saved = localStorage.getItem('hf_habits');
+    const saved = localStorage.getItem(KEYS.HABITS);
     return saved ? JSON.parse(saved) : DEFAULT_HABITS;
   });
 
   const [trackingData, setTrackingData] = useState<TrackingData>(() => {
-    const saved = localStorage.getItem('hf_data');
+    const saved = localStorage.getItem(KEYS.DATA);
     return saved ? JSON.parse(saved) : {};
   });
 
   const [dailyLogs, setDailyLogs] = useState<DailyLogData>(() => {
-    const saved = localStorage.getItem('hf_daily_logs');
+    const saved = localStorage.getItem(KEYS.LOGS);
     return saved ? JSON.parse(saved) : {};
   });
 
   const [financeData, setFinanceData] = useState<FinanceData>(() => {
-      const saved = localStorage.getItem('hf_finance');
+      const saved = localStorage.getItem(KEYS.FINANCE);
       const parsed = saved ? JSON.parse(saved) : {};
       return { 
           expenses: parsed.expenses || [], 
@@ -45,7 +62,7 @@ const App: React.FC = () => {
   });
 
   const [settings, setSettings] = useState<UserSettings>(() => {
-    const saved = localStorage.getItem('hf_settings');
+    const saved = localStorage.getItem(KEYS.SETTINGS);
     return saved ? JSON.parse(saved) : { 
         deepWorkInterval: 90,
         mode: 'HERO',
@@ -54,35 +71,33 @@ const App: React.FC = () => {
     };
   });
 
-  // Persistence Effects
+  // Persistence Effects (Scoped to User)
   useEffect(() => {
-    localStorage.setItem('hf_habits', JSON.stringify(habits));
-  }, [habits]);
+    localStorage.setItem(KEYS.HABITS, JSON.stringify(habits));
+  }, [habits, KEYS.HABITS]);
 
   useEffect(() => {
-    localStorage.setItem('hf_data', JSON.stringify(trackingData));
-  }, [trackingData]);
+    localStorage.setItem(KEYS.DATA, JSON.stringify(trackingData));
+  }, [trackingData, KEYS.DATA]);
 
   useEffect(() => {
-    localStorage.setItem('hf_daily_logs', JSON.stringify(dailyLogs));
-  }, [dailyLogs]);
+    localStorage.setItem(KEYS.LOGS, JSON.stringify(dailyLogs));
+  }, [dailyLogs, KEYS.LOGS]);
 
   useEffect(() => {
-    localStorage.setItem('hf_finance', JSON.stringify(financeData));
-  }, [financeData]);
+    localStorage.setItem(KEYS.FINANCE, JSON.stringify(financeData));
+  }, [financeData, KEYS.FINANCE]);
 
   useEffect(() => {
-    localStorage.setItem('hf_settings', JSON.stringify(settings));
-  }, [settings]);
+    localStorage.setItem(KEYS.SETTINGS, JSON.stringify(settings));
+  }, [settings, KEYS.SETTINGS]);
 
   // Handler for checking/unchecking a habit with XP Logic
   const toggleHabit = (habitId: string, date: string) => {
-    // Determine action based on current state to calculate XP immediately
     const currentDayData = trackingData[date] || [];
     const isCompleted = currentDayData.includes(habitId);
-    const earnedXp = isCompleted ? -15 : 15; // If currently completed, we are unchecking (-15), else checking (+15)
+    const earnedXp = isCompleted ? -15 : 15; 
     
-    // Update Tracking Data
     setTrackingData(prev => {
       const dayList = prev[date] || [];
       let newData;
@@ -94,7 +109,6 @@ const App: React.FC = () => {
       return { ...prev, [date]: newData };
     });
 
-    // Update Hero Stats
     if (settings.mode === 'HERO') {
         setSettings(prev => {
             let newXp = prev.heroStats.xp + earnedXp;
@@ -121,11 +135,10 @@ const App: React.FC = () => {
     }
   };
 
-  // Calculate Energy Level from yesterday's sleep
   const calculateEnergy = () => {
     const today = new Date().toISOString().split('T')[0];
-    const log = dailyLogs[today]; // In a real app, logic would check "previous night" properly
-    if (!log) return 70; // Default assumption
+    const log = dailyLogs[today];
+    if (!log) return 70;
     const score = Math.min(100, Math.round((log.sleepHours / 8) * 100));
     return score;
   };
@@ -169,6 +182,8 @@ const App: React.FC = () => {
         setView={setCurrentView} 
         isOpen={isSidebarOpen}
         setIsOpen={setSidebarOpen}
+        username={user.username}
+        onLogout={onLogout}
       />
       
       <main className="flex-1 overflow-y-auto overflow-x-hidden w-full">
@@ -247,6 +262,31 @@ const App: React.FC = () => {
       </main>
     </div>
   );
+};
+
+// --- Main App Wrapper (Auth Handling) ---
+const App: React.FC = () => {
+    const [user, setUser] = useState<User | null>(() => {
+        const saved = localStorage.getItem('omni_current_user');
+        return saved ? JSON.parse(saved) : null;
+    });
+
+    const handleLogin = (loggedInUser: User) => {
+        setUser(loggedInUser);
+        localStorage.setItem('omni_current_user', JSON.stringify(loggedInUser));
+    };
+
+    const handleLogout = () => {
+        setUser(null);
+        localStorage.removeItem('omni_current_user');
+    };
+
+    if (!user) {
+        return <Auth onLogin={handleLogin} />;
+    }
+
+    // Keying by username forces a complete remount of AuthenticatedApp when user changes
+    return <AuthenticatedApp key={user.username} user={user} onLogout={handleLogout} />;
 };
 
 export default App;
