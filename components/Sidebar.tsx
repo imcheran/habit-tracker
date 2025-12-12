@@ -1,7 +1,6 @@
-
 import React from 'react';
 import { ViewState } from '../types';
-import { LayoutDashboard, CalendarDays, BarChart2, Settings, Sparkles, Target, BookOpen, PieChart, Zap, Wallet, X } from 'lucide-react';
+import { LayoutDashboard, CalendarDays, BarChart2, Settings, Sparkles, BookOpen, PieChart, Zap, Wallet, X } from 'lucide-react';
 
 interface SidebarProps {
   currentView: ViewState;
