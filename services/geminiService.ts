@@ -1,10 +1,10 @@
 import { GoogleGenAI } from "@google/genai";
-import { Habit, TrackingData, HabitStats, DailyEntry } from '../types';
+import { Habit, HabitStats, DailyEntry } from '../types';
 
 declare var process: any;
 
 // Helper to format data for the AI
-const formatDataForAI = (habits: Habit[], data: TrackingData, stats: Record<string, HabitStats>) => {
+const formatDataForAI = (habits: Habit[], stats: Record<string, HabitStats>) => {
   const today = new Date().toISOString().split('T')[0];
   const summary = habits.map(h => {
     const s = stats[h.id];
@@ -25,12 +25,11 @@ const formatDataForAI = (habits: Habit[], data: TrackingData, stats: Record<stri
 
 export const generateProductivityInsights = async (
   habits: Habit[],
-  data: TrackingData,
   stats: Record<string, HabitStats>
 ): Promise<string> => {
   try {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-    const jsonData = formatDataForAI(habits, data, stats);
+    const jsonData = formatDataForAI(habits, stats);
     
     const prompt = `
       You are the "OmniLife Super-Brain," a bio-digital system analyzing a user's habits.
@@ -60,9 +59,7 @@ export const generateProductivityInsights = async (
 };
 
 export const generateOrbitAnalysis = async (
-  entry: DailyEntry,
-  habits: Habit[],
-  completedHabitIds: string[]
+  entry: DailyEntry
 ): Promise<string> => {
   try {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
@@ -115,7 +112,6 @@ export const generateOrbitAnalysis = async (
 
 export const generateTrendAnalysis = async (
   logs: DailyEntry[],
-  habits: Habit[],
   rangeLabel: string
 ): Promise<string> => {
   try {

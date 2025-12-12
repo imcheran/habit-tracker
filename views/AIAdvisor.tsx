@@ -35,7 +35,7 @@ const AIAdvisor: React.FC<AIAdvisorProps> = ({ habits, data, dailyLogs }) => {
 
   const handleGenerateCoach = async () => {
     setLoading(true);
-    const result = await generateProductivityInsights(habits, data, stats);
+    const result = await generateProductivityInsights(habits, stats);
     setInsight(result);
     setLoading(false);
   };
@@ -71,7 +71,7 @@ const AIAdvisor: React.FC<AIAdvisorProps> = ({ habits, data, dailyLogs }) => {
          return;
      }
 
-     const result = await generateTrendAnalysis(logsToAnalyze, habits, label);
+     const result = await generateTrendAnalysis(logsToAnalyze, label);
      setTrendInsight(result);
      setLoading(false);
   };

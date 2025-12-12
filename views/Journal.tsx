@@ -144,7 +144,7 @@ const Journal: React.FC<JournalProps> = ({ logs, onUpdate, settings }) => {
 
   const handleAnalyze = async () => {
     setLoading(true);
-    const analysis = await generateOrbitAnalysis(entry, [], []); 
+    const analysis = await generateOrbitAnalysis(entry); 
     updateEntry('aiResponse', analysis);
     setLoading(false);
   };
