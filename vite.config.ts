@@ -9,8 +9,9 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [react()],
     define: {
-      // This ensures process.env.API_KEY is replaced with the string value during build
-      'process.env.API_KEY': JSON.stringify(env.API_KEY)
+      // This ensures process.env.API_KEY is replaced with the string value during build.
+      // We check env.API_KEY (from .env files) OR process.env.API_KEY (system env vars/Vercel)
+      'process.env.API_KEY': JSON.stringify(env.API_KEY || process.env.API_KEY)
     }
   }
 })

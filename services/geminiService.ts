@@ -5,12 +5,16 @@ declare var process: any;
 
 // Helper to check for API Key presence
 const getApiKey = (): string | null => {
-  // In Vite, defined variables are replaced literally. 
-  // If the variable wasn't set at build time, it might be undefined.
-  if (typeof process !== 'undefined' && process.env && process.env.API_KEY) {
-      return process.env.API_KEY;
+  // In Vite, 'process.env.API_KEY' is replaced by the actual string value during the build.
+  // We use a try-catch because accessing 'process' directly in the browser would otherwise throw 
+  // a ReferenceError if the replacement didn't happen.
+  try {
+      // @ts-ignore
+      return process.env.API_KEY || null;
+  } catch (e) {
+      console.warn("API Key access failed or key is missing.");
+      return null;
   }
-  return null;
 };
 
 // Helper to format data for the AI
