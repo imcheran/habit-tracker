@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { FinanceData, Expense, Debt } from '../types';
 import { 
-    Plus, Trash2, Wallet, TrendingUp, HandCoins, Settings, DollarSign, 
+    Plus, Trash2, Wallet, TrendingUp, Coins, Settings, DollarSign, 
     Calendar, ArrowUpRight, ArrowDownRight, Activity, PieChart as PieIcon, 
     BarChart3, AlertCircle, Target, Banknote
 } from 'lucide-react';
@@ -251,7 +251,7 @@ const Finance: React.FC<FinanceProps> = ({ data, onUpdate }) => {
              {[
                  { id: 'TRANSACTION', icon: Plus, label: 'Add Entry' },
                  { id: 'DASHBOARD', icon: TrendingUp, label: 'Analytics' },
-                 { id: 'FUNDS', icon: HandCoins, label: 'Funds' },
+                 { id: 'FUNDS', icon: Coins, label: 'Funds' },
                  { id: 'SETTINGS', icon: Settings, label: 'Settings' }
              ].map(tab => (
                  <button

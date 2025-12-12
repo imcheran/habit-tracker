@@ -1,31 +1,30 @@
 import { Habit, HabitStats, DailyEntry } from '../types';
 
-declare var process: any;
-
-// Helper to check for API Key presence
-const getApiKey = (): string | null => {
+// Access API Key securely from Environment Variables to prevent GitHub upload blocks
+// In Vite, create a .env file with: VITE_API_KEY=your_key_here
+const getApiKey = (): string => {
   try {
-      // @ts-ignore
-      return process.env.API_KEY || null;
+    // @ts-ignore
+    return import.meta.env.VITE_API_KEY || "";
   } catch (e) {
-      console.warn("API Key access failed or key is missing.");
-      return null;
+    return "";
   }
 };
 
+const API_KEY = getApiKey();
+
 // Generic Helper to call Groq API (Llama 3)
 const callGroqAPI = async (systemPrompt: string, userPrompt: string): Promise<string> => {
-    const apiKey = getApiKey();
-    
-    if (!apiKey) {
-        throw new Error("MISSING_KEY");
+    if (!API_KEY) {
+        console.error("API Key is missing. Please create a .env file and add VITE_API_KEY=your_groq_api_key");
+        return "Configuration Error: API Key is missing. Please set VITE_API_KEY in your .env file.";
     }
 
     try {
         const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
             method: "POST",
             headers: {
-                "Authorization": `Bearer ${apiKey}`,
+                "Authorization": `Bearer ${API_KEY}`,
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
@@ -42,14 +41,21 @@ const callGroqAPI = async (systemPrompt: string, userPrompt: string): Promise<st
         if (!response.ok) {
             const err = await response.json().catch(() => ({}));
             console.error("Groq API Error:", err);
-            throw new Error("API_ERROR");
+            
+            if (response.status === 401) {
+                return "Error: Invalid API Key. Please check your .env file configuration.";
+            }
+            if (response.status === 429) {
+                return "Error: Rate limit exceeded. Please try again in a moment.";
+            }
+            return `Error: API call failed (${response.status})`;
         }
 
         const data = await response.json();
         return data.choices[0]?.message?.content || "No response generated.";
     } catch (error) {
         console.error("Groq Network Error:", error);
-        throw error;
+        return "Network Error: Could not connect to AI service.";
     }
 };
 
@@ -97,10 +103,7 @@ export const generateProductivityInsights = async (
     return await callGroqAPI(systemPrompt, userPrompt);
 
   } catch (error: any) {
-    if (error.message === "MISSING_KEY") {
-        return "Configuration Error: API Key is missing. Please add your Groq key as 'API_KEY' in your environment variables.";
-    }
-    return "AI Service is currently unavailable. Please check your internet connection.";
+    return "AI Service is currently unavailable.";
   }
 };
 
@@ -141,9 +144,6 @@ export const generateOrbitAnalysis = async (
     return await callGroqAPI(systemPrompt, userPrompt);
 
   } catch (error: any) {
-    if (error.message === "MISSING_KEY") {
-        return "Configuration Error: Missing API Key.";
-    }
     return "Orbit is offline. Please try again.";
   }
 };
@@ -183,9 +183,6 @@ export const generateTrendAnalysis = async (
     return await callGroqAPI(systemPrompt, userPrompt);
 
   } catch (error: any) {
-    if (error.message === "MISSING_KEY") {
-        return "Configuration Error: Missing API Key.";
-    }
     return "Trend analysis unavailable.";
   }
 };
